@@ -20,3 +20,13 @@ services:
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
     ports:
       - "9092:9092"
+    volumes:
+      - ./create-topics.sh:/usr/bin/create-topics.sh
+    entrypoint:
+      - sh
+      - -c
+      - |
+        #!/bin/bash
+        /etc/confluent/docker/run &
+        /usr/bin/create-topics.sh
+        sleep infinity
