@@ -1,6 +1,8 @@
 FROM python:3.10-bullseye as spark-base
 
-ARG SPARK_VERSION=3.3.3
+ARG SPARK_VERSION=3.5.1
+ARG HADOOP_VERSION=3.3.4
+ARG SCALA_VERSION=2.12
 
 # Install tools required by the OS
 RUN apt-get update && \
@@ -22,7 +24,7 @@ RUN apt-get update && \
 ENV SPARK_HOME=${SPARK_HOME:-"/opt/spark"}
 ENV HADOOP_HOME=${HADOOP_HOME:-"/opt/hadoop"}
 
-RUN mkdir -p ${HADOOP_HOME} && mkdir -p ${SPARK_HOME}
+RUN mkdir -p ${HADOOP_HOME} && mkdir -p ${SPARK_HOME} && mkdir -p ${HADOOP_HOME}/app && mkdir -p ${SPARK_HOME}/app
 WORKDIR ${SPARK_HOME}
 
 # Download and install Spark
@@ -30,6 +32,25 @@ RUN curl https://archive.apache.org/dist/spark/spark-${SPARK_VERSION}/spark-${SP
  && tar xvzf spark-${SPARK_VERSION}-bin-hadoop3.tgz --directory /opt/spark --strip-components 1 \
  && rm -rf spark-${SPARK_VERSION}-bin-hadoop3.tgz
 
+# RUN mkdir -p /opt/spark/jars
+
+# RUN /opt/spark/bin/spark-shell --packages \
+# org.apache.spark:spark-sql-kafka-0-10_2.12:3.5.1,\
+# org.apache.spark:spark-streaming-kafka-0-10_2.12:3.5.1,\
+# org.apache.hadoop:hadoop-aws:${HADOOP_VERSION},\
+# # https://hudi.apache.org/docs/quick-start-guide/
+# com.amazonaws:aws-java-sdk-bundle:1.12.762,\
+# org.apache.hudi:hudi-spark3.5-bundle_2.12:0.15.0 -i <<EOF
+# :quit
+# EOF
+
+RUN mkdir -p /opt/spark/jars
+
+RUN /opt/spark/bin/spark-shell --packages org.apache.spark:spark-sql-kafka-0-10_2.12:3.5.1,org.apache.spark:spark-streaming-kafka-0-10_2.12:3.5.1,org.apache.hadoop:hadoop-aws:${HADOOP_VERSION},com.amazonaws:aws-java-sdk-bundle:1.12.762 -i <<EOF
+:quit
+EOF
+
+RUN cp -r /root/.ivy2/jars/* /opt/spark/jars/
 
 FROM spark-base as pyspark
 
