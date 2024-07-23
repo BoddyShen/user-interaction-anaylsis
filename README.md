@@ -9,6 +9,7 @@ This project demonstrates a data pipeline using Kafka, Spark, and AWS S3. The pr
 1. Build image: ``docker build -t da-spark-image .``
 2. Use ``make run`` to run the docker-compose.
 3. Submit the job to Spark:
+  `docker cp jobs/kafka_to_S3.py spark-master:/opt/spark/app/kafka_to_S3.py` \
   `docker exec spark-master spark-submit \
     --master spark://spark-master:7077 \
     --deploy-mode client \
